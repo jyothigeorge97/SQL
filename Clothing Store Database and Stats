@@ -1,0 +1,29 @@
+--Create a clothing store database
+CREATE TABLE clothing_store (id INTEGER PRIMARY KEY, Category TEXT, Size TEXT,Material TEXT, Quantity INTEGER, Price INTEGER);
+
+INSERT into clothing_store VALUES (1, "Pants", "S", "Cotton", 5, 34);
+INSERT into clothing_store VALUES (2, "Pants", "M", "Cotton", 2, 34);
+INSERT into clothing_store VALUES (3, "Pants", "L", "Cotton", 9, 34);
+INSERT into clothing_store VALUES (4, "Tops", "S", "Silk", 17, 20);
+INSERT into clothing_store VALUES (5, "Tops", "M", "Cotton", 3, 20);
+INSERT into clothing_store VALUES (6, "Tops", "L", "Cotton", 7, 20);
+INSERT into clothing_store VALUES (7, "Dresses", "S", "Cotton", 5, 25);
+INSERT into clothing_store VALUES (8, "Dresses", "M", "Cotton", 10, 25);
+INSERT into clothing_store VALUES (9, "Dresses", "L", "Silk", 1, 25); 
+INSERT into clothing_store VALUES (10, "Skirts", "S", "Cotton", 4, 17);
+INSERT into clothing_store VALUES (11, "Skirts", "M", "Cotton", 5, 17);
+INSERT into clothing_store VALUES (12, "Skirts", "L", "Cotton", 6, 17); 
+INSERT into clothing_store VALUES (13, "Scarves", "One-size", "Cotton", 5, 12);
+INSERT into clothing_store VALUES (14, "Shoes", "8", "Canvas", 2, 21);
+INSERT into clothing_store VALUES (15, "Shoes", "9", "Canvas", 9, 21); 
+
+--Number of tops in stock at the sotre? 
+SELECT * FROM clothing_store 
+WHERE Category = "Tops";
+
+--Display the database ordered by price
+SELECT * FROM clothing_store
+ORDER BY price DESC;
+
+--Max price of items in the bulk section? 
+SELECT MAX(price) FROM clothing_store;
