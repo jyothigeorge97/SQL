@@ -1,0 +1,76 @@
+-- BASIC QUERIES
+-- 1. Total number of unique diagnoses*
+SELECT count(distinct ICD9_CODE) as number_of_unique_diagnoses FROM diagnoses_icd;
+
+-- 2. Total number of unique procedures
+SELECT count(distinct ICD9_CODE) as number_of_unique_procedures FROM procedures_icd;
+
+-- 3. Total number of unique drugs
+SELECT count(distinct DRUG) as number_of_unique_drugs FROM prescriptions;
+
+-- 4. Number of unique diagnoses for each patient
+SELECT SUBJECT_ID, count(distinct ICD9_CODE) as number_of_unique_diagnoses FROM diagnoses_icd GROUP BY SUBJECT_ID;
+
+-- 5. Number of unique procedures for each patient
+SELECT SUBJECT_ID, count(distinct ICD9_CODE) as number_of_unique_procedures FROM procedures_icd GROUP BY SUBJECT_ID;
+
+-- 6. Number of unique drugs for each patient
+SELECT SUBJECT_ID, count(distinct DRUG) as number_of_unique_drugs FROM prescriptions GROUP BY SUBJECT_ID;
+
+-- 7. Number of patients for each diagnosis
+SELECT distinct ICD9_CODE, count(SUBJECT_ID) as number_of_patients FROM diagnoses_icd GROUP BY ICD9_CODE;
+
+-- 8. Number of patients for each procedure
+SELECT distinct ICD9_CODE, count(SUBJECT_ID) as number_of_patients FROM procedures_icd GROUP BY ICD9_CODE;
+
+-- 9. Number of patients for each drug type
+SELECT distinct DRUG_TYPE, count(SUBJECT_ID) as number_of_patients FROM prescriptions GROUP BY DRUG_TYPE;
+
+-- 10. Number of admissions for each patient.
+SELECT SUBJECT_ID, count(HADM_ID) as number_of_admissions FROM admissions GROUP BY SUBJECT_ID;
+
+
+-- ADVANCED QUERIES
+-- 1. For each number x, report the number of patients who have been admitted x times
+SELECT x, count(SUBJECT_ID) AS Admitted_Patients_x_Times FROM 
+(SELECT SUBJECT_ID, count(distinct HADM_ID) AS x FROM admissions GROUP  BY SUBJECT_ID) AS number_of_patients_who_have_been_admitted
+GROUP BY x;
+
+-- 2. Create views for the following tables: diagnoses_icd / prescriptions /procedures_icd, such that only patients with 5 or more admissions are preserved
+-- View for diagnoses_icd
+CREATE VIEW D AS SELECT * FROM diagnoses_icd 
+WHERE SUBJECT_ID IN (SELECT SUBJECT_ID FROM admissions
+GROUP BY SUBJECT_ID HAVING count(distinct HADM_ID) > 4);
+-- View for prescriptions
+CREATE VIEW Rx AS SELECT * FROM prescriptions 
+WHERE SUBJECT_ID IN (SELECT SUBJECT_ID FROM admissions
+GROUP BY SUBJECT_ID HAVING count(distinct HADM_ID) > 4);
+-- View for procdures_icd
+CREATE VIEW P AS SELECT * FROM procedures_icd 
+WHERE SUBJECT_ID IN (SELECT SUBJECT_ID FROM admissions
+GROUP BY SUBJECT_ID HAVING count(distinct HADM_ID) > 4);
+
+
+
+-- CASE STUDY: Most common diagnoses
+-- 1. Create a temporary table T for diagnoses_icd, such that only the first three characters of the diagnosis code are preserved. Subsequently,
+CREATE temporary table T
+SELECT ROW_ID, SUBJECT_ID, HADM_ID, SEQ_NUM, left(ICD9_CODE, 3) as NEW_ICD9_CODE FROM diagnoses_icd;
+--       A.count the number of unique diagnoses in T
+SELECT count(distinct NEW_ICD9_CODE) AS number_of_unique_diagnoses FROM T;
+--       B.count the number of unique diagnoses for each patient in T
+SELECT SUBJECT_ID, count(distinct NEW_ICD9_CODE) AS number_of_unique_diagnoses_for_each_patient FROM T GROUP BY SUBJECT_ID;
+
+-- 2. Repeat 1 entirely, except the first three digits in every diagnosis should be preserved (in addition to any letters) and saved in a temporary table T1.  E.g., for code ‘V3001’ preserve ‘V300’; for ‘0389’ preserve ‘038’.
+CREATE temporary table T1
+SELECT ROW_ID, SUBJECT_ID, HADM_ID, SEQ_NUM, CASE CONVERT(ICD9_CODE, CHAR) 
+WHEN left(ICD9_CODE, 1) like '%[a-zA-Z]%' then left(ICD9_CODE, 4)
+ELSE left(ICD9_CODE, 3) END AS PRESERVED_ICD9_CODE FROM diagnoses_icd;
+--       A.count the number of unique diagnoses in T1
+SELECT count(distinct PRESERVED_ICD9_CODE) AS number_of_unique_diagnoses FROM T1;
+--       B.count the number of unique diagnoses for each patient in T1
+SELECT SUBJECT_ID, count(distinct PRESERVED_ICD9_CODE) AS number_of_unique_diagnoses_for_each_patient FROM T1 GROUP BY SUBJECT_ID;
+
+-- 3. Use T1 created in 2. Count patients diagnosed for each ICD-9 code* and list the top 10 most common diagnoses.
+SELECT PRESERVED_ICD9_CODE, count(distinct SUBJECT_ID) AS Patients FROM T1 GROUP BY PRESERVED_ICD9_CODE 
+ORDER BY Patients DESC LIMIT 10;
