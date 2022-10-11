@@ -1,0 +1,40 @@
+-- Write a SELECT statement that returns the following columns from the Products table: product_code, product_name, list_price, and discount_percent. 
+Add an ORDER BY clause to this statement that sorts the result set by list price in descending order 
+
+SELECT product_name, product_code, list_price, discount_percent
+FROM products
+ORDER BY list_price DESC;
+
+
+-- Write a SELECT statement that returns the following columns from the Products table: product_name, list_price, date_added. 
+Return only the rows with a list price greater than 500 and less than 2000. 
+Sort the result set in descending order by the date_added column.
+
+SELECT product_name, list_price, date_added
+FROM products
+WHERE list_price>500 and list_price<2000
+ORDER BY date_added DESC;
+
+
+-- Write a SELECT statement that returns the following product information from the Categories table and the Products table: category_name, product_name, list_price. 
+Sort the result set by category_name and then by product_name in ascending order.
+
+SELECT C.category_name, P.product_name, P.list_price
+FROM products as P JOIN categories as C
+ON P.category_id = C.category_id
+ORDER BY category_name, product_name ASC; 
+
+
+--Write SELECT statements that return the name of customers who have purchased Fender products (Hint: use LIKE). 
+Display the customer name, product name, and category name. Make sure to display the customer’s full name as “Firstname Lastname” 
+
+SELECT CONCAT(Cust.first_name, ' ', Cust.last_name) as name_of_customer, P.product_name , C.category_name
+FROM orders as O JOIN Customers as Cust
+ON Cust.customer_id = O.customer_id 
+JOIN order_items as OI 
+ON OI.order_id = O.order_id 
+JOIN products as P
+ON P.product_id = OI.product_id 
+JOIN categories as C
+ON C.category_id = P.category_id 
+WHERE P.product_name LIKE '%Fender%';
