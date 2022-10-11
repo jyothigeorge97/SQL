@@ -1,0 +1,43 @@
+-- query 1: first/last timestamps of recorded data for every student in the group
+select ParticipantId, min(Formatted_time) as FirstTimestamp, max(Formatted_time) as LastTimestamp
+from survey_result
+group by ParticipantId;
+
+-- query 2: number of records for each probe for every student in the group
+select ParticipantId, type, count(*)
+from survey_result
+group by ParticipantId, type
+order by ParticipantId;
+
+-- query 3: most frequent activity for every student in the group
+select ParticipantId, Activity, count(*) frequency
+from survey_result sr1
+where type = 'Activity'
+group by ParticipantId, Activity
+having frequency = (select max(f) from (select ParticipantId, Activity, count(*) f
+                    from survey_result sr2
+                    where type = 'Activity'
+                      and sr1.ParticipantId = sr2.ParticipantId
+                    group by ParticipantId, Activity) x)
+order by ParticipantId;
+
+-- query 4: history of device battery level for every student in the group
+create table battery_history as
+select ParticipantId, BatteryLevel, Formatted_time
+from survey_result
+where type = 'Battery'
+order by ParticipantId, Formatted_time;
+
+-- data summary for report
+select distinct DeviceManufacturer, DeviceModel, OperatingSystem, DeviceId, ParticipantId
+from survey_result;
+
+-- duration of study
+select min(Formatted_time) start_date,
+       max(Formatted_time) end_date,
+       datediff(max(Formatted_time), min(Formatted_time)) duration
+from survey_result;
+
+-- data size
+select count(*) record_count
+from survey_result;
