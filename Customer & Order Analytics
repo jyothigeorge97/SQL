@@ -41,3 +41,10 @@ SELECT Product, SUM(quantity)
 FROM BIT_DB.FebSales 
 WHERE location like '%Los Angeles%'
 GROUP BY Product;
+
+
+SELECT distinct location, count(orderID)
+FROM BIT_DB.JanSales
+WHERE location like '%NY%'
+GROUP BY location
+HAVING count(orderID) >2;
